@@ -1,0 +1,24 @@
+# templates/videos/video_list.html
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Видео</h1>
+    <div class="row">
+        {% for video in videos %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    {% if video.thumbnail %}
+                        <img src="{{ video.thumbnail.url }}" class="card-img-top" alt="{{ video.title }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ video.title }}</h5>
+                        <p class="card-text">{{ video.description|truncatewords:20 }}</p>
+                        <a href="{{ video.get_absolute_url }}" class="btn btn-primary">Смотреть</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
