@@ -6,7 +6,7 @@ from django.contrib.auth.models import Group
 
 # Create your models here.
 class Gallery(models.Model):
-    titel_name_faculty = models.CharField(max_length=50, verbose_name="Название галерее Видео уроков Факультета")
+    title_name_faculty = models.CharField(max_length=50, verbose_name="Название галерее Видео уроков Факультета")
     slug_name_faculty = models.SlugField(max_length=50, unique=True)
     image_faculty = models.ImageField(upload_to="images/")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
