@@ -9,8 +9,8 @@ class Videoinline(admin.TabularInline):
 @admin.register(Gallery)
 class GalleryAdmin(admin.ModelAdmin):
     inlines = [Videoinline]
-    list_display = ('titel_name_faculty','created_at')
-    prepopulated_fields = {'slug_name_faculty': ('titel_name_faculty',)}
+    list_display = ('title_name_faculty','created_at')
+    prepopulated_fields = {'slug_name_faculty': ('title_name_faculty',)}
 
 @admin.register(Video)
 class VideoAdmin(admin.ModelAdmin):
