@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'videos',  # Your app name here
-    'videogallery'    
+    'galleryvideo',    
 ]
 
 MIDDLEWARE = [

@@ -2,7 +2,7 @@ from django.db import models
 from django.urls import reverse
 from django.core.validators import FileExtensionValidator
 from django.utils.text import slugify
-from django.contrib.auth.models import Group
+
 
 # Create your models here.
 class Gallery(models.Model):
@@ -12,7 +12,7 @@ class Gallery(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
 
     def __str__(self):
-        return self.titel_name_faculty
+        return self.title_name_faculty
     
     class Meta:
         verbose_name = "Название Факультета"
