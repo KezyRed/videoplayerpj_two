@@ -5,6 +5,6 @@ from . import views
 app_name = 'galleryvideo'  # Namespace для приложения
 
 urlpatterns = [
-    path('', views.index, name='index'),
-    path('video/<int:video_id>/', views.video_player, name='video_player'),
+    path('', views.gallery_list, name='gallery_list'),
+    path('video/<int:id>/', views.video_detail, name='video_detail'),
 ]

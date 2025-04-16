@@ -1,12 +1,11 @@
 from django.shortcuts import render, get_object_or_404
-from django.views.generic import ListView, DetailView
 from .models import Gallery, Video
 
 # Create your views here.
-def index(request):
-    videos = Video.objects.all()
-    return render(request, 'galleryvideo/index.html', {'videos': videos})
+def gallery_list(request):
+    galleries = Gallery.objects.all()
+    return render(request, 'galleryvideo/gallery_list.html', {'galleries': galleries})
 
-def video_player(request, video_id):
-    video = get_object_or_404(Video, pk=video_id)
-    return render(request, 'galleryvideo/video_player.html', {'video': video})
+def video_detail(request, id):
+    video = get_object_or_404(Video, id=id)
+    return render(request, 'galleryvideo/video_detail.html', {'video': video})

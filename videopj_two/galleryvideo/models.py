@@ -14,6 +14,10 @@ class Gallery(models.Model):
     def __str__(self):
         return self.title_name_faculty
     
+   # В модели Gallery
+    def get_absolute_url(self):
+        return reverse('gallery_detail', kwargs={'slug': self.slug_name_faculty})
+
     class Meta:
         verbose_name = "Название Факультета"
         verbose_name_plural = "Название Факультета"
@@ -30,6 +34,9 @@ class Video(models.Model):
 
     def __str__(self):
         return self.title_video_faculty
+    
+    # def get_absolute_url(self):
+    #     return reverse('gallery_video_detail', args=[str(self.id)])
     
     class Meta:
         verbose_name = "Видеоурок"
