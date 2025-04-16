@@ -8,16 +8,19 @@ from django.utils.text import slugify
 class Gallery(models.Model):
     title_name_faculty = models.CharField(max_length=50, verbose_name="Название галерее Видео уроков Факультета")
     slug_name_faculty = models.SlugField(max_length=50, unique=True)
-    image_faculty = models.ImageField(upload_to="images/")
+    image_faculty = models.ImageField(upload_to="images/", verbose_name="Изображение факультета")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
 
     def __str__(self):
         return self.title_name_faculty
     
-   # В модели Gallery
-    def get_absolute_url(self):# Исправляем URL для факультета
-        return reverse('galleryvideo:gallery_list')
-        # return reverse('gallery_detail', kwargs={'slug': self.slug_name_faculty})
+    def get_absolute_url(self):
+        return reverse('galleryvideo:gallery_detail', kwargs={'slug': self.slug_name_faculty})
+    
+    def save(self, *args, **kwargs):
+        if not self.slug_name_faculty:
+            self.slug_name_faculty = slugify(self.title_name_faculty)
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Название Факультета"
@@ -38,7 +41,6 @@ class Video(models.Model):
     
     def get_absolute_url(self):
         return reverse('galleryvideo:video_detail', args=[str(self.id)])
-    #     return reverse('gallery_video_detail', args=[str(self.id)])
     
     class Meta:
         verbose_name = "Видеоурок"

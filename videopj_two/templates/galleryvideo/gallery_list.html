@@ -1,93 +1,28 @@
+# templates/galleryvideo/gallery_list.html
 {% extends 'base.html' %}
 {% load static %}
 
 {% block content %}
-<div class="container py-4">
-    <h1 class="mb-4">Факультеты</h1>
-
-     <!-- Отладочная информация -->
-    <div class="alert alert-info">
-        <p>Количество факультетов: {{ galleries|length }}</p>
-        <p>Данные galleries: {{ galleries }}</p>
-    </div>
-    
+<div class="container">
+    <h1>Факультеты</h1>
     <div class="row">
         {% for gallery in galleries %}
-            <div class="col-md-6 mb-5">
-                <div class="card gallery-card shadow-sm">
-                    <!-- Изображение факультета с обработчиком клика -->
-                    <img src="{{ gallery.image_faculty.url }}" 
-                         class="card-img-top faculty-image" 
-                         alt="{{ gallery.title_name_faculty }}"
-                         style="height: 250px; object-fit: cover; cursor: pointer;"
-                         onclick="toggleVideoList('video-list-{{ gallery.id }}')">
-                    
-                    <div class="card-body">
-                        <h3 class="card-title">{{ gallery.title_name_faculty }}</h3>
-                        <!-- Кнопка для показа/скрытия видео (как альтернатива клику по изображению) -->
-                        <button class="btn btn-primary toggle-videos-btn" 
-                                onclick="toggleVideoList('video-list-{{ gallery.id }}', this)">
-                            Показать видеоуроки
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Горизонтальный список видео (скрыт по умолчанию) -->
-                <div class="video-list mt-3" id="video-list-{{ gallery.id }}" style="display: none;">
-                    <h4 class="mb-3">Видеоуроки факультета:</h4>
-                    
-                    <div class="d-flex overflow-auto py-2">
-                        {% for video in gallery.videos.all %}
-                            <div class="card flex-shrink-0 me-3" style="width: 250px;">
-                                <img src="{{ video.thumbnail.url }}" 
-                                     class="card-img-top" 
-                                     alt="{{ video.title_video_faculty }}" 
-                                     style="height: 140px; object-fit: cover;">
-                                <div class="card-body p-3">
-                                    <h5 class="card-title fs-6">{{ video.title_video_faculty }}</h5>
-                                    <p class="card-text small text-muted">{{ video.description|truncatechars:60 }}</p>
-                                    <a href="{% url 'video_detail' video.id %}" class="btn btn-sm btn-outline-primary">Смотреть видео</a>
-                                </div>
-                            </div>
-                        {% empty %}
-                            <div class="alert alert-info w-100">На данный момент видеоуроки отсутствуют</div>
-                        {% endfor %}
-                    </div>
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                {% if gallery.image_faculty %}
+                    <img src="{{ gallery.image_faculty.url }}" class="card-img-top" alt="{{ gallery.title_name_faculty }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ gallery.title_name_faculty }}</h5>
+                    <a href="{{ gallery.get_absolute_url }}" class="btn btn-primary">Смотреть видео</a>
                 </div>
             </div>
+        </div>
         {% empty %}
-            <div class="col-12">
-                <div class="alert alert-warning">Факультеты не найдены.</div>
-            </div>
+        <div class="col-12">
+            <div class="alert alert-info">Факультеты пока не добавлены</div>
+        </div>
         {% endfor %}
     </div>
 </div>
-
-<script>
-    // Простая функция для переключения видимости списка видео
-    function toggleVideoList(videoListId, buttonElement) {
-        const videoList = document.getElementById(videoListId);
-        
-        // Сначала скрываем все открытые списки видео
-        document.querySelectorAll('.video-list').forEach(el => {
-            if (el.id !== videoListId && el.style.display === 'block') {
-                el.style.display = 'none';
-                
-                // Обновляем текст на всех кнопках
-                document.querySelectorAll('.toggle-videos-btn').forEach(btn => {
-                    btn.textContent = 'Показать видеоуроки';
-                });
-            }
-        });
-        
-        // Затем переключаем текущий список
-        if (videoList.style.display === 'block') {
-            videoList.style.display = 'none';
-            if (buttonElement) buttonElement.textContent = 'Показать видеоуроки';
-        } else {
-            videoList.style.display = 'block';
-            if (buttonElement) buttonElement.textContent = 'Скрыть видеоуроки';
-        }
-    }
-</script>
 {% endblock %}
