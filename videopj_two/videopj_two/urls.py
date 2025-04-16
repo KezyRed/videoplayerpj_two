@@ -22,7 +22,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('videos/', include('videos.urls')),  # подключаем URLs приложения videos
-    path('faculty/', include('galleryvideo.urls')), # подключаем URLs gallaryvideo
+    path('', include('galleryvideo.urls')), # подключаем URLs gallaryvideo
 ]
 
 if settings.DEBUG:
