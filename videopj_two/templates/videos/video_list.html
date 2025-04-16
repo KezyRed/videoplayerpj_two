@@ -1,4 +1,3 @@
-# templates/videos/video_list.html
 {% extends 'base.html' %}
 
 {% block content %}
@@ -6,7 +5,7 @@
     <h1>Видео</h1>
     <div class="row">
         {% for video in videos %}
-            <div class="col-md-4 mb-4">
+            <div class="col-md-4 mb-4 video-card">
                 <div class="card">
                     {% if video.thumbnail %}
                         <img src="{{ video.thumbnail.url }}" class="card-img-top" alt="{{ video.title }}">
@@ -14,11 +13,105 @@
                     <div class="card-body">
                         <h5 class="card-title">{{ video.title }}</h5>
                         <p class="card-text">{{ video.description|truncatewords:20 }}</p>
-                        <a href="{{ video.get_absolute_url }}" class="btn btn-primary">Смотреть</a>
+                        <button class="btn btn-primary toggle-playlist" data-video-id="{{ video.id }}">
+                            Смотреть
+                        </button>
+                    </div>
+                </div>
+                <!-- Плейлист для текущей карточки -->
+                <div class="playlist-container" id="playlist-{{ video.id }}">
+                    <div class="playlist-scroll">
+                        {% for item in videos %}
+                            <a href="{{ item.get_absolute_url }}" class="playlist-item">
+                                {% if item.thumbnail %}
+                                    <img src="{{ item.thumbnail.url }}" 
+                                         alt="{{ item.title }}" 
+                                         class="playlist-thumbnail">
+                                {% endif %}
+                                <span class="playlist-title">{{ item.title|truncatechars:15 }}</span>
+                            </a>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
         {% endfor %}
     </div>
 </div>
+
+<style>
+    /* Стили для плейлиста */
+    .playlist-container {
+        display: none;
+        position: absolute;
+        width: 95%;
+        background: rgba(56, 17, 8, 0.13);
+        border-radius: 0 0 8px 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 10px;
+        z-index: 100;
+        margin-top: 15px; /* Перекрывает нижнюю часть карточки */
+    }
+
+    .playlist-scroll {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 5px;
+    }
+
+    .playlist-item {
+        flex: 0 0 80px;
+        text-align: center;
+        text-decoration: none !important;
+        color: #333;
+    }
+
+    .playlist-thumbnail {
+        width: 80px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+
+    .playlist-title {
+        display: block;
+        font-size: 10px;
+        margin-top: 2px;
+    }
+
+    .video-card {
+        position: relative; /* Для позиционирования плейлиста */
+    }
+</style>
+
+<script>
+    // Показать/скрыть плейлист под карточкой
+    document.querySelectorAll('.toggle-playlist').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const videoId = e.target.dataset.videoId;
+            const playlist = document.getElementById(`playlist-${videoId}`);
+            const isVisible = playlist.style.display === 'block';
+
+            // Закрыть все плейлисты
+            document.querySelectorAll('.playlist-container').forEach(p => {
+                p.style.display = 'none';
+            });
+
+            // Открыть текущий, если был закрыт
+            if (!isVisible) {
+                playlist.style.display = 'block';
+            }
+        });
+    });
+
+    // Закрыть плейлист при клике вне карточки
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.video-card')) {
+            document.querySelectorAll('.playlist-container').forEach(p => {
+                p.style.display = 'none';
+            });
+        }
+    });
+</script>
+
 {% endblock %}
