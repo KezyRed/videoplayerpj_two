@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <h1>{{ gallery.title_name_faculty }}</h1>
+            <img src="{{ gallery.image_faculty.url }}" class="img-fluid mb-3" alt="{{ gallery.title_name_faculty }}">
+        </div>
+        
+        <div class="col-12">
+            <h2>Видеоуроки</h2>
+            <div class="row">
+                {% for video in gallery.videos.all %}
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <img src="{{ video.thumbnail.url }}" class="card-img-top" alt="{{ video.title_video_faculty }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ video.title_video_faculty }}</h5>
+                            <p class="card-text">{{ video.description|truncatewords:20 }}</p>
+                            <a href="{% url 'galleryvideo:video_detail' video.id %}" class="btn btn-primary">Смотреть видео</a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info">Видеоуроки пока не добавлены</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

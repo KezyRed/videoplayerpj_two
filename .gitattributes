@@ -1,0 +1,3 @@
+*.mp4 filter=lfs diff=lfs merge=lfs -text
+videopj_two/media/videos/20._Изменение_столбцов.mp4 filter=lfs diff=lfs merge=lfs -text
+videopj_two/media/videos/95._Публикация_сайта_в_интернете.mp4 filter=lfs diff=lfs merge=lfs -text

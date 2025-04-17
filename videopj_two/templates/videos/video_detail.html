@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h1>{{ video.title }}</h1>
+            <div class="video-container">
+                <video width="100%" controls>
+                    <source src="{{ video.video_file.url }}" type="video/mp4">
+                    Ваш браузер не поддерживает видео тег.
+                </video>
+            </div>
+            <div class="mt-4">
+                <h3>Описание</h3>
+                <p>{{ video.description }}</p>
+                <p class="text-muted">Добавлено: {{ video.created_at|date:"d.m.Y" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

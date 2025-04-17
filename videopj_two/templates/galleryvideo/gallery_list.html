@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h1>Факультеты</h1>
+    <div class="row">
+        {% for gallery in galleries %}
+        <div class="col-md-4 mb-4 video-card">
+            <div class="card position-relative">
+                {% if gallery.image_faculty %}
+                    <img src="{{ gallery.image_faculty.url }}" class="card-img-top" alt="{{ gallery.title_name_faculty }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ gallery.title_name_faculty }}</h5>
+                    <button class="btn btn-primary toggle-playlist" 
+                            data-gallery-id="{{ gallery.id }}">
+                        Смотреть
+                    </button>
+                </div>
+
+                <!-- Плейлист -->
+                <div class="playlist-container" id="playlist-{{ gallery.id }}">
+                    <div class="playlist-scroll">
+                        {% for video in gallery.videos.all %}
+                            <a href="{{ video.get_absolute_url }}" class="playlist-item">
+                                {% if video.thumbnail %}
+                                    <img src="{{ video.thumbnail.url }}" 
+                                         alt="{{ video.title_video_faculty }}" 
+                                         class="playlist-thumbnail">
+                                {% endif %}
+                                <span class="playlist-title">{{ video.title_video_faculty|truncatechars:15 }}</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">Факультеты пока не добавлены</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .playlist-container {
+        display: none;
+        position: absolute;
+        width: 100%;
+        left: 0;
+        bottom: -20px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 0 0 8px 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 10px;
+        z-index: 100;
+    }
+
+    .playlist-scroll {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 5px;
+    }
+
+    .playlist-item {
+        flex: 0 0 100px;
+        text-align: center;
+        text-decoration: none !important;
+        color: #333;
+    }
+
+    .playlist-thumbnail {
+        width: 100px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 4px;
+        transition: transform 0.2s;
+    }
+
+    .playlist-item:hover .playlist-thumbnail {
+        transform: scale(1.05);
+    }
+
+    .video-card {
+        position: relative;
+    }
+</style>
+
+<script>
+    document.querySelectorAll('.toggle-playlist').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const galleryId = e.target.dataset.galleryId;
+            const playlist = document.getElementById(`playlist-${galleryId}`);
+            
+            // Закрыть все плейлисты
+            document.querySelectorAll('.playlist-container').forEach(p => {
+                if (p !== playlist) p.style.display = 'none';
+            });
+
+            // Переключить текущий
+            playlist.style.display = playlist.style.display === 'block' ? 'none' : 'block';
+        });
+    });
+
+    // Закрытие при клике вне области
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.video-card')) {
+            document.querySelectorAll('.playlist-container').forEach(p => {
+                p.style.display = 'none';
+            });
+        }
+    });
+</script>
+{% endblock %}
