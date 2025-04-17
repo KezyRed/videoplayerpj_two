@@ -29,9 +29,5 @@ class VideoDetailView(DetailView):
     template_name = 'galleryvideo/video_detail.html'
     context_object_name = 'video'
 
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     context['gallery'] = self.object.gallery  # Добавляем объект галереи в контекст
-    #     return context
 
 
