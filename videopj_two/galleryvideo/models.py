@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.core.validators import FileExtensionValidator
 from django.utils.text import slugify
 from django.contrib.auth.models import AbstractBaseUser
+from django.utils import timezone
 
 
 # Create your models here.
@@ -24,8 +25,8 @@ class Gallery(models.Model):
         super().save(*args, **kwargs)
 
     class Meta:
-        verbose_name = "Название Факультета"
-        verbose_name_plural = "Название Факультета"
+        verbose_name = "Название Факультетов"
+        verbose_name_plural = "Название Факультетов"
         ordering = ['-created_at']
 
 
@@ -49,4 +50,19 @@ class Video(models.Model):
         ordering = ['-created_at']
 
 class Presentation(models.Model):
-    pass
+    video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name='presentations', verbose_name='Видео')
+    title = models.CharField(max_length=100, verbose_name="Название презентации")
+    presentation_file = models.FileField(
+        upload_to='presentations/', 
+        verbose_name="Файл презентации",
+        validators=[FileExtensionValidator(['odp', 'pptx', 'ppt'])]
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата добавления")
+
+    def str(self):
+        return self.title
+
+    class Meta:
+        verbose_name = "Презентация"
+        verbose_name_plural = "Презентации"
+        ordering = ['title']
