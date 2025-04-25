@@ -3,6 +3,10 @@
 from django.db import migrations
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
 class Migration(migrations.Migration):
 
     dependencies = [

@@ -5,6 +5,10 @@ import django.db.models.deletion
 import django.core.validators
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
 class Migration(migrations.Migration):
 
     dependencies = [

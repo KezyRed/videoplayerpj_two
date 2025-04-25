@@ -50,6 +50,7 @@ class Video(models.Model):
         ordering = ['-created_at']
 
 
+
 class Presentation(models.Model):
     video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name='presentations', verbose_name='Видео')
     title = models.CharField(max_length=100, verbose_name="Название презентации")
