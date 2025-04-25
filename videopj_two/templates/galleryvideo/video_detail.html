@@ -63,6 +63,23 @@
                 </div>
             </div>
         </div>
+                <!-- Add this after the video description in video_detail.html -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Материалы к уроку:</h5>
+                {% for presentation in video.presentations.all %}
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-file-earmark-slides me-2"></i>
+                        <span>{{ presentation.title }}</span>
+                        <a href="{{ presentation.presentation_file.url }}" class="btn btn-sm btn-outline-success ms-auto" download>
+                            <i class="bi bi-download"></i> Скачать презентацию
+                        </a>
+                    </div>
+                {% empty %}
+                    <p class="text-muted">К этому уроку нет доступных презентаций</p>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
