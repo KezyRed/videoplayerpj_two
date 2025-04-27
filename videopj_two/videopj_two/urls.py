@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('videos/', include('videos.urls')),  # подключаем URLs приложения videos
     path('', include('galleryvideo.urls')), # подключаем URLs gallaryvideo
+    path('accounts/', include('django.contrib.auth.urls')),  # Для авторизации
 ]
 
 if settings.DEBUG:

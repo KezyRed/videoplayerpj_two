@@ -1,16 +1,8 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from .models import Gallery, Video
 from django.views.generic import ListView, DetailView
+from .forms import CustomUserCreationForm
 
-# Create your views here.
-# def gallery_list(request):
-#     galleries = Gallery.objects.all().prefetch_related('videos')
-#     print(f"DEBUG: Количество факультетов: {galleries.count()}")
-#     return render(request, 'galleryvideo/gallery_list.html', {'galleries': galleries})
-
-# def video_detail(request, id):
-#     video = get_object_or_404(Video.objects.select_related('gallery'), id=id)
-#     return render(request, 'galleryvideo/video_detail.html', {'video': video})
 
 class GalleryListView(ListView):
     model = Gallery
@@ -29,5 +21,14 @@ class VideoDetailView(DetailView):
     template_name = 'galleryvideo/video_detail.html'
     context_object_name = 'video'
 
+def register(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('gallery_list')
+    else:
+        form = CustomUserCreationForm()
+    return render(request, 'registration/register.html', {'form': form})
 
 
