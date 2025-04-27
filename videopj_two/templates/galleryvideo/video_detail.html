@@ -5,7 +5,7 @@
 <div class="container py-4">
     <!-- Кнопка назад к факультету -->
     <div class="mb-4">
-        <a href="{{ video.gallery.get_absolute_url }}" class="btn btn-outline-primary">
+        <a href="{{ video.gallery.get_absolute_url }}" class="btn btn-outline-danger">
             &larr; Вернуться к {{ video.gallery.title_name_faculty }}
         </a>
     </div>
@@ -38,13 +38,13 @@
         <!-- Боковая колонка со связанными видео -->
         <div class="col-lg-4">
             <div class="card">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-danger text-white">
                     <h5 class="card-title mb-0">Другие видеоуроки факультета</h5>
                 </div>
                 <div class="list-group list-group-flush">
                     {% for related_video in video.gallery.videos.all %}
                         <a href="{{ related_video.get_absolute_url }}" 
-                           class="list-group-item list-group-item-action {% if related_video.id == video.id %}active{% endif %}">
+                           class="list-group-item list-group-item-secondary list-group-item-action  {% if related_video.id == video.id %}active{% endif %}">
                             <div class="d-flex align-items-center">
                                 <img src="{{ related_video.thumbnail.url }}" 
                                      alt="{{ related_video.title_video_faculty }}"

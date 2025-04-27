@@ -19,7 +19,7 @@
                         <div class="card-body">
                             <h5 class="card-title">{{ video.title_video_faculty }}</h5>
                             <p class="card-text">{{ video.description|truncatewords:20 }}</p>
-                            <a href="{% url 'galleryvideo:video_detail' video.id %}" class="btn btn-primary">Смотреть видео</a>
+                            <a href="{% url 'galleryvideo:video_detail' video.id %}" class="btn btn-danger">Смотреть видео</a>
                         </div>
                     </div>
                 </div>
