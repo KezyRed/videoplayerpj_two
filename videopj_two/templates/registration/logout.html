@@ -1,10 +1,38 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2>Вход</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Войти</button>
-    <a href="{% url 'galleryvideo:register' %}" class="btn btn-link">Регистрация</a>
-</form>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header text-white" style="background-color: #9a0105;">
+                    <h2 class="mb-0 py-2 text-center">Выход из системы</h2>
+                </div>
+                <div class="card-body p-4 text-center">
+                    <h4 class="mb-4">Вы уверены, что хотите выйти?</h4>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn text-white" style="background-color: #9a0105;">
+                                Подтвердить выход
+                            </button>
+                            <a href="/" class="btn btn-outline-secondary mt-2">Отмена</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn {
+        transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+        background-color: #7a0104 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(154, 1, 5, 0.3);
+    }
+</style>
 {% endblock %}
