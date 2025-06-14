@@ -14,6 +14,7 @@ class GalleryDetailView(DetailView):
     model = Gallery
     template_name = 'galleryvideo/gallery_detail.html'
     context_object_name = 'gallery'
+    slug_field = 'slug_name_faculty'
     slug_url_kwarg = 'slug'
 
 class VideoDetailView(DetailView):

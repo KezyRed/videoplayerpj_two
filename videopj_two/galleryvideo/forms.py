@@ -5,7 +5,7 @@ from django.contrib.auth.models import Group, User
 class CustomUserCreationForm(UserCreationForm):
     ROLE_CHOICES = [
         ('student','Студент'),
-        ('teaher','Препопдаватель'),
+        ('teacher','Преподаватель'),
     ]
     role = forms.ChoiceField(
         choices=ROLE_CHOICES,
