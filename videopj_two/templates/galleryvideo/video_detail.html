@@ -5,9 +5,12 @@
 <div class="container py-4">
     <!-- Кнопка назад к факультету -->
     <div class="mb-4">
-        <a href="{{ video.gallery.get_absolute_url }}" class="btn btn-outline-danger">
-            &larr; Вернуться к {{ video.gallery.slug_name_faculty }}
+        <a href="{% url 'galleryvideo:gallery_list' %}" class="btn btn-outline-danger">
+            <i class="bi bi-house"></i> &larr; Вернуться на главную страницу
         </a>
+       <!-- <a href="{{ video.gallery.get_absolute_url }}" class="btn btn-outline-danger">
+            &larr; Вернуться к {{ video.gallery.slug_name_faculty }}
+        </a>-->
     </div>
     
     <div class="row">
