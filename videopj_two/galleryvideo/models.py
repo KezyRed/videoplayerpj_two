@@ -61,7 +61,7 @@ class Presentation(models.Model):
     )
     uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата добавления")
 
-    def str(self):
+    def __str__(self):
         return self.title
 
     class Meta:

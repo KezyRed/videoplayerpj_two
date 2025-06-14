@@ -26,7 +26,7 @@ def register(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('gallery_list')
+            return redirect('galleryvideo:gallery_list')
     else:
         form = CustomUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
