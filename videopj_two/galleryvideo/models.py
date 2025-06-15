@@ -8,9 +8,9 @@ from django.utils import timezone
 
 # Create your models here.
 class Gallery(models.Model):
-    title_name_faculty = models.CharField(max_length=50, verbose_name="Название галерее Видео уроков Факультета")
+    title_name_faculty = models.CharField(max_length=50, verbose_name="Название галерее Видео-уроков")
     slug_name_faculty = models.SlugField(max_length=50, unique=True)
-    image_faculty = models.ImageField(upload_to="images/", verbose_name="Изображение факультета")
+    image_faculty = models.ImageField(upload_to="images/", verbose_name="Изображение Видео-уроков")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
 
     def __str__(self):
@@ -25,8 +25,8 @@ class Gallery(models.Model):
         super().save(*args, **kwargs)
 
     class Meta:
-        verbose_name = "Название Факультетов"
-        verbose_name_plural = "Название Факультетов"
+        verbose_name = "Наименование Карточки темы"
+        verbose_name_plural = "Наименование Карточки темы"
         ordering = ['-created_at']
 
 
@@ -55,6 +55,15 @@ class Video(models.Model):
                 'description':tc.description,
             })
         return timecodes
+    
+    def get_chapters(self):
+        '''Возвращает только таймкоды, помеченные как главы'''
+        return self.timecodes.filter(is_chapter=True).order_by('time_seconds')
+    
+    def get_all_timecodes(self):
+        '''Возвращает все таймкоды, отсортированные по времени'''
+        return self.timecodes.all().order_by('time_seconds')
+    
 
     class Meta:
         verbose_name = "Видеоурок"
@@ -69,7 +78,7 @@ class Presentation(models.Model):
     presentation_file = models.FileField(
         upload_to='presentations/', 
         verbose_name="Файл презентации",
-        validators=[FileExtensionValidator(['odp', 'pptx', 'ppt'])]
+        validators=[FileExtensionValidator(['odp', 'pptx', 'ppt', 'pdf'])]  # Ограничиваем типы файлов
     )
     uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата добавления")
 
@@ -113,6 +122,19 @@ class VideoTimecode(models.Model):
     def save(self, *args, **kwargs):
         # Проверяем что время не превышает длительность видео (если известна)
         super().save(*args, **kwargs)
+    
+    def get_next_timecode(self):
+        """Возвращает следующий таймкод"""
+        return self.video.timecodes.filter(
+            time_seconds__gt=self.time_seconds
+        ).order_by('time_seconds').first()
+    
+    def get_previous_timecode(self):
+        """Возвращает предыдущий таймкод"""
+        return self.video.timecodes.filter(
+            time_seconds__lt=self.time_seconds
+        ).order_by('-time_seconds').first()
+    
     
     class Meta:
         verbose_name = "Тайм-код"
