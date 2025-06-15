@@ -57,49 +57,77 @@
                 </div>
             </div>
 
-                         <!-- Тайм-коды -->
+            <!-- Тайм-коды -->
             {% if video.timecodes.all %}
             <div class="card mb-4">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">
                         <i class="bi bi-clock me-2"></i>
                         Содержание урока
+                        <span class="badge bg-danger ms-2">{{ video.timecodes.count }}</span>
                     </h5>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="showAllTimecodes">
+                            Все
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="showChaptersOnly">
+                            Только главы
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
+                    <div class="list-group list-group-flush timecodes-list" id="timecodesList">
                         {% for timecode in video.timecodes.all %}
                         <div class="list-group-item list-group-item-action timecode-item {% if timecode.is_chapter %}chapter-item{% endif %}" 
                              data-time="{{ timecode.time_seconds }}"
-                             style="cursor: pointer;">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="flex-grow-1">
-                                    <div class="d-flex align-items-center mb-1">
-                                        {% if timecode.is_chapter %}
-                                            <i class="bi bi-play-circle-fill text-danger me-2"></i>
-                                            <strong class="timecode-time text-danger">{{ timecode.get_time_display }}</strong>
-                                        {% else %}
-                                            <i class="bi bi-clock me-2"></i>
-                                            <span class="timecode-time text-primary">{{ timecode.get_time_display }}</span>
-                                        {% endif %}
-                                        <span class="ms-2 {% if timecode.is_chapter %}fw-bold{% endif %}">
-                                            {{ timecode.title }}
-                                        </span>
-                                    </div>
-                                    {% if timecode.description %}
-                                        <small class="text-muted d-block">{{ timecode.description }}</small>
+                             data-chapter="{{ timecode.is_chapter|yesno:'true,false' }}">
+                            <div class="d-flex align-items-start gap-3">
+                                <!-- Превью или иконка -->
+                                <div class="timecode-preview">
+                                    {% if timecode.thumbnail %}
+                                        <img src="{{ timecode.thumbnail.url }}" 
+                                             alt="{{ timecode.title }}"
+                                             class="timecode-thumbnail">
+                                    {% else %}
+                                        <div class="timecode-icon">
+                                            {% if timecode.is_chapter %}
+                                                <i class="bi bi-play-circle-fill"></i>
+                                            {% else %}
+                                                <i class="bi bi-clock"></i>
+                                            {% endif %}
+                                        </div>
                                     {% endif %}
                                 </div>
-                                {% if timecode.thumbnail %}
-                                    <img src="{{ timecode.thumbnail.url }}" 
-                                         alt="{{ timecode.title }}"
-                                         class="ms-3 rounded"
-                                         style="width: 60px; height: 40px; object-fit: cover;">
-                                {% endif %}
+                                
+                                <!-- Информация о таймкоде -->
+                                <div class="timecode-info flex-grow-1">
+                                    <div class="timecode-title {% if timecode.is_chapter %}chapter-title{% endif %}">
+                                        {% if timecode.is_chapter %}
+                                            <i class="bi bi-bookmark-fill me-1"></i>
+                                        {% endif %}
+                                        {{ timecode.title }}
+                                    </div>
+                                    {% if timecode.description %}
+                                        <p class="timecode-description mb-0">{{ timecode.description }}</p>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Время -->
+                                <div class="timecode-time">
+                                    <span class="badge {% if timecode.is_chapter %}bg-danger{% else %}bg-primary{% endif %}">
+                                        {{ timecode.get_time_display }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Нажмите на любой таймкод для перехода к соответствующему моменту в видео
+                    </small>
                 </div>
             </div>
             {% endif %}
@@ -107,17 +135,25 @@
             <!-- Материалы к уроку -->
             <div class="card mb-4">
                 <div class="card-body">
-                    <h5 class="card-title">Материалы к уроку:</h5>
+                    <h5 class="card-title">
+                        <i class="bi bi-file-earmark-slides me-2"></i>
+                        Материалы к уроку
+                    </h5>
                     {% for presentation in video.presentations.all %}
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-file-earmark-slides me-2"></i>
-                            <span>{{ presentation.title }}</span>
-                            <a href="{{ presentation.presentation_file.url }}" class="btn btn-sm btn-outline-success ms-auto" download>
-                                <i class="bi bi-download"></i> Скачать презентацию
+                        <div class="d-flex align-items-center mb-2 p-2 border rounded">
+                            <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>
+                            <span class="flex-grow-1">{{ presentation.title }}</span>
+                            <a href="{{ presentation.presentation_file.url }}" 
+                               class="btn btn-sm btn-outline-success" 
+                               download>
+                                <i class="bi bi-download"></i> Скачать
                             </a>
                         </div>
                     {% empty %}
-                        <p class="text-muted">К этому уроку нет доступных презентаций</p>
+                        <div class="text-muted d-flex align-items-center">
+                            <i class="bi bi-info-circle me-2"></i>
+                            К этому уроку нет доступных презентаций
+                        </div>
                     {% endfor %}
                 </div>
             </div>
@@ -160,4 +196,44 @@
 {% block extra_js %}
 <!-- Подключаем JavaScript для таймкодов -->
 <script src="{% static 'js/timecodes.js' %}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Кнопки фильтрации таймкодов
+    const showAllBtn = document.getElementById('showAllTimecodes');
+    const showChaptersBtn = document.getElementById('showChaptersOnly');
+    const timecodesList = document.getElementById('timecodesList');
+
+    if (showAllBtn && showChaptersBtn && timecodesList) {
+        // Показать все таймкоды
+        showAllBtn.addEventListener('click', function() {
+            timecodesList.classList.remove('chapters-only');
+            showAllBtn.classList.add('active');
+            showChaptersBtn.classList.remove('active');
+        });
+
+        // Показать только главы
+        showChaptersBtn.addEventListener('click', function() {
+            timecodesList.classList.add('chapters-only');
+            showChaptersBtn.classList.add('active');
+            showAllBtn.classList.remove('active');
+        });
+
+        // Устанавливаем активную кнопку по умолчанию
+        showAllBtn.classList.add('active');
+    }
+
+    // Улучшенная прокрутка для таймкодов
+    const timecodeItems = document.querySelectorAll('.timecode-item');
+    timecodeItems.forEach(item => {
+        item.addEventListener('click', function() {
+            // Добавляем визуальную обратную связь
+            this.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+        });
+    });
+});
+</script>
 {% endblock %}
