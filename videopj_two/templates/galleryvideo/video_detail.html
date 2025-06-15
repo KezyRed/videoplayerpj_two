@@ -2,27 +2,42 @@
 {% load static %}
 {% load video_filters %}
 
+{% block extra_css %}
+<link href="{% static 'css/video_detail.css' %}" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
-<div class="container py-4">
+<div class="container-fluid py-4">
     <!-- Кнопка назад к факультету -->
     <div class="mb-4">
         <a href="{% url 'galleryvideo:gallery_list' %}" class="btn btn-outline-danger">
             <i class="bi bi-house"></i> &larr; Вернуться на главную страницу
         </a>
-       <!-- <a href="{{ video.gallery.get_absolute_url }}" class="btn btn-outline-danger">
-            &larr; Вернуться к {{ video.gallery.slug_name_faculty }}
-        </a>-->
     </div>
     
     <div class="row">
         <!-- Основная колонка с видео -->
         <div class="col-lg-8">
-            <!-- Видеоплеер -->
-            <div class="ratio ratio-16x9 mb-4 shadow">
-                <video src="{{ video.video_file.url }}" 
-                       poster="{{ video.thumbnail.url }}" 
-                       controls 
-                       class="rounded"></video>
+            <!-- Video.js плеер -->
+            <div class="mb-4">
+                <video
+                    id="video-player"
+                    class="video-js vjs-default-skin"
+                    controls
+                    preload="auto"
+                    width="100%"
+                    height="450"
+                    poster="{{ video.thumbnail.url }}"
+                    data-setup="{}">
+                    <source src="{{ video.video_file.url }}" type="video/mp4">
+                    <p class="vjs-no-js">
+                        Для просмотра этого видео включите JavaScript и рассмотрите возможность обновления до
+                        <a href="https://videojs.com/html5-video-support/" target="_blank">
+                            веб-браузера, который
+                            <span class="vjs-sr-only">поддерживает HTML5 видео</span>
+                        </a>
+                    </p>
+                </video>
             </div>
             
             <!-- Информация о видео -->
@@ -31,6 +46,7 @@
                 Добавлено: {{ video.created_at|date:"d.m.Y" }}
             </div>
             
+            <!-- Описание видео -->
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">Описание:</h5>
@@ -39,152 +55,56 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        
-        <!-- Боковая колонка со связанными видео -->
-        <div class="col-lg-4">
-            <div class="card">
-                <div class="card-header bg-danger text-white">
-                    <h5 class="card-title mb-0">Другие видеоуроки факультета</h5>
-                </div>
-                <div class="list-group list-group-flush">
-                    {% for related_video in video.gallery.videos.all %}
-                        <a href="{{ related_video.get_absolute_url }}" 
-                           class="list-group-item list-group-item-secondary list-group-item-action  {% if related_video.id == video.id %}active{% endif %}">
-                            <div class="d-flex align-items-center">
-                                <img src="{{ related_video.thumbnail.url }}" 
-                                     alt="{{ related_video.title_video_faculty }}"
-                                     class="me-3 rounded" 
-                                     style="width: 80px; height: 45px; object-fit: cover;">
-                                <div>
-                                    <h6 class="mb-0 {% if related_video.id == video.id %}text-white{% endif %}">
-                                        {{ related_video.title_video_faculty }}
-                                    </h6>
-                                </div>
-                            </div>
-                        </a>
+            <!-- Материалы к уроку -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Материалы к уроку:</h5>
+                    {% for presentation in video.presentations.all %}
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-file-earmark-slides me-2"></i>
+                            <span>{{ presentation.title }}</span>
+                            <a href="{{ presentation.presentation_file.url }}" class="btn btn-sm btn-outline-success ms-auto" download>
+                                <i class="bi bi-download"></i> Скачать презентацию
+                            </a>
+                        </div>
                     {% empty %}
-                        <div class="list-group-item">Нет других видеоуроков</div>
+                        <p class="text-muted">К этому уроку нет доступных презентаций</p>
                     {% endfor %}
                 </div>
             </div>
         </div>
 
-
-        <!-- Add this after the video description in video_detail.html -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title">Материалы к уроку:</h5>
-                {% for presentation in video.presentations.all %}
-                    <div class="d-flex align-items-center mb-2">
-                        <i class="bi bi-file-earmark-slides me-2"></i>
-                        <span>{{ presentation.title }}</span>
-                        <a href="{{ presentation.presentation_file.url }}" class="btn btn-sm btn-outline-success ms-auto" download>
-                            <i class="bi bi-download"></i> Скачать презентацию
-                        </a>
+        <!-- Фиксированная боковая колонка -->
+        <div class="col-lg-4">
+            <div class="sidebar-sticky">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="card-title mb-0">Другие видеоуроки факультета</h5>
                     </div>
-                {% empty %}
-                    <p class="text-muted">К этому уроку нет доступных презентаций</p>
-                {% endfor %}
+                    <div class="list-group list-group-flush sidebar-content">
+                        {% for related_video in video.gallery.videos.all %}
+                            <a href="{{ related_video.get_absolute_url }}" 
+                               class="list-group-item list-group-item-secondary list-group-item-action {% if related_video.id == video.id %}active{% endif %}">
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ related_video.thumbnail.url }}" 
+                                         alt="{{ related_video.title_video_faculty }}"
+                                         class="me-3 rounded" 
+                                         style="width: 80px; height: 45px; object-fit: cover;">
+                                    <div>
+                                        <h6 class="mb-0 {% if related_video.id == video.id %}text-white{% endif %}">
+                                            {{ related_video.title_video_faculty }}
+                                        </h6>
+                                    </div>
+                                </div>
+                            </a>
+                        {% empty %}
+                            <div class="list-group-item">Нет других видеоуроков</div>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Добавляем CSS для форматирования описания -->
-<style>
-.formatted-description {
-    line-height: 1.6;
-}
-
-.formatted-description p {
-    margin-bottom: 0.8rem;
-}
-
-/* Стили для списков */
-.formatted-description ul {
-    list-style-type: disc;
-    margin-left: 1.5rem;
-    margin-bottom: 1rem;
-    padding-left: 0;
-}
-
-.formatted-description ol {
-    list-style-type: decimal;
-    margin-left: 1.5rem;
-    margin-bottom: 1rem;
-    padding-left: 0;
-}
-
-.formatted-description li {
-    margin-bottom: 0.3rem;
-    padding-left: 0.5rem;
-}
-
-/* Стили для отступов */
-.formatted-description .indent-1 {
-    margin-left: 1rem;
-}
-
-.formatted-description .indent-2 {
-    margin-left: 2rem;
-}
-
-.formatted-description .indent-3 {
-    margin-left: 3rem;
-}
-
-/* Вложенные списки */
-.formatted-description ul ul,
-.formatted-description ol ol {
-    margin-top: 0.3rem;
-    margin-bottom: 0.3rem;
-}
-
-.formatted-description ul ul {
-    list-style-type: circle;
-}
-
-.formatted-description ol ol {
-    list-style-type: lower-alpha;
-}
-
-/* Дополнительные стили для форматирования */
-.formatted-description strong {
-    font-weight: bold;
-    color: #495057;
-}
-
-.formatted-description em {
-    font-style: italic;
-    color: #6c757d;
-}
-
-.formatted-description blockquote {
-    border-left: 4px solid #dc3545;
-    padding-left: 1rem;
-    margin: 1rem 0;
-    color: #6c757d;
-    font-style: italic;
-    background-color: #f8f9fa;
-    padding: 0.8rem 1rem;
-    border-radius: 0.25rem;
-}
-
-/* Отступы между блоками */
-.formatted-description > * + * {
-    margin-top: 0.5rem;
-}
-
-/* Убираем лишние отступы у первого и последнего элемента */
-.formatted-description > *:first-child {
-    margin-top: 0;
-}
-
-.formatted-description > *:last-child {
-    margin-bottom: 0;
-}
-</style>
-
 {% endblock %}
