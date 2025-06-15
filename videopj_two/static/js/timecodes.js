@@ -1,11 +1,9 @@
-// static/js/timecodes.js - JavaScript для работы с таймкодами
+// static/js/timecodes.js - Исправленная версия
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Инициализация Video.js плеера
     const videoElement = document.getElementById('video-player');
     if (!videoElement) return;
 
-    // Ждем полной инициализации Video.js
     setTimeout(() => {
         const player = videojs('video-player');
         
@@ -14,11 +12,11 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        console.log('Video.js плеер инициализирован:', player);
-
-        // Получаем все элементы таймкодов
         const timecodeItems = document.querySelectorAll('.timecode-item');
         console.log('Найдено таймкодов:', timecodeItems.length);
+
+        // Флаг для предотвращения автоскролла во время ручного клика
+        let isManualClick = false;
 
         // Добавляем обработчики кликов для таймкодов
         timecodeItems.forEach(item => {
@@ -28,29 +26,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!isNaN(timeSeconds)) {
                     console.log('Переход к времени:', timeSeconds, 'секунд');
                     
+                    // Устанавливаем флаг ручного клика
+                    isManualClick = true;
+                    
                     // Убираем активный класс у всех элементов
                     timecodeItems.forEach(el => el.classList.remove('active', 'current'));
                     
                     // Добавляем активный класс к текущему элементу
-                    this.classList.add('active');
+                    this.classList.add('active', 'current');
                     
                     // Переходим к указанному времени
                     player.currentTime(timeSeconds);
+                    
+                    // Сбрасываем флаг через небольшую задержку
+                    setTimeout(() => {
+                        isManualClick = false;
+                    }, 1000);
                     
                     // Если видео на паузе, запускаем воспроизведение
                     if (player.paused()) {
                         player.play();
                     }
-                } else {
-                    console.error('Неверное время для таймкода:', this.dataset.time);
                 }
             });
         });
 
         // Обновление активного таймкода при воспроизведении
         player.on('timeupdate', function() {
-            const currentTime = player.currentTime();
-            updateActiveTimecode(currentTime);
+            // Не обновляем активный таймкод во время ручного клика
+            if (!isManualClick) {
+                const currentTime = player.currentTime();
+                updateActiveTimecode(currentTime);
+            }
         });
 
         // Функция обновления активного таймкода
@@ -60,8 +67,10 @@ document.addEventListener('DOMContentLoaded', function() {
             timecodeItems.forEach(item => {
                 const timeSeconds = parseInt(item.dataset.time);
                 
-                // Убираем текущий класс
-                item.classList.remove('current');
+                // Убираем текущий класс только если это не ручной клик
+                if (!isManualClick) {
+                    item.classList.remove('current');
+                }
                 
                 // Если текущее время больше времени таймкода, он может быть активным
                 if (currentTime >= timeSeconds) {
@@ -69,38 +78,56 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
-            // Устанавливаем текущий таймкод
-            if (activeTimecode) {
+            // Устанавливаем текущий таймкод только если это не ручной клик
+            if (activeTimecode && !isManualClick) {
                 timecodeItems.forEach(item => item.classList.remove('current'));
                 activeTimecode.classList.add('current');
                 
-                // Прокручиваем к активному таймкоду
+                // Прокручиваем к активному таймкоду только при автоматическом обновлении
                 scrollToActiveTimecode(activeTimecode);
             }
         }
 
-        // Функция прокрутки к активному таймкоду
+        // ИСПРАВЛЕННАЯ функция прокрутки к активному таймкоду
         function scrollToActiveTimecode(activeItem) {
-            if (!activeItem) return;
+            if (!activeItem || isManualClick) return;
             
             const container = activeItem.closest('.list-group');
-            if (container) {
-                const containerRect = container.getBoundingClientRect();
-                const itemRect = activeItem.getBoundingClientRect();
+            if (!container) return;
+            
+            // Проверяем, есть ли вертикальная прокрутка у контейнера
+            if (container.scrollHeight <= container.clientHeight) return;
+            
+            const containerRect = container.getBoundingClientRect();
+            const itemRect = activeItem.getBoundingClientRect();
+            
+            // Более точная проверка видимости элемента
+            const isVisible = (
+                itemRect.top >= containerRect.top + 10 && 
+                itemRect.bottom <= containerRect.bottom - 10
+            );
+            
+            // Прокручиваем только если элемент действительно не виден
+            if (!isVisible) {
+                // Используем более мягкую прокрутку
+                const scrollTop = container.scrollTop;
+                const itemOffsetTop = activeItem.offsetTop;
+                const containerHeight = container.clientHeight;
+                const itemHeight = activeItem.offsetHeight;
                 
-                // Проверяем, виден ли элемент
-                if (itemRect.top < containerRect.top || itemRect.bottom > containerRect.bottom) {
-                    activeItem.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'nearest'
-                    });
-                }
+                // Вычисляем оптимальную позицию (центрируем элемент)
+                const targetScrollTop = itemOffsetTop - (containerHeight / 2) + (itemHeight / 2);
+                
+                // Плавная прокрутка
+                container.scrollTo({
+                    top: Math.max(0, targetScrollTop),
+                    behavior: 'smooth'
+                });
             }
         }
 
-        // Клавиатурные сокращения для навигации по таймкодам
+        // Клавиатурные сокращения (без изменений)
         document.addEventListener('keydown', function(e) {
-            // Проверяем, что фокус не на элементах ввода
             if (document.activeElement.tagName === 'INPUT' || 
                 document.activeElement.tagName === 'TEXTAREA') {
                 return;
@@ -140,24 +167,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Контекстное меню для таймкодов (опционально)
+        // Остальной код без изменений...
         timecodeItems.forEach(item => {
             item.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
                 const timeSeconds = parseInt(this.dataset.time);
-                const timeDisplay = formatTime(timeSeconds);
                 
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     const text = `${this.querySelector('.timecode-time').textContent} - ${this.textContent.trim()}`;
                     navigator.clipboard.writeText(text);
-                    
-                    // Показываем уведомление
                     showNotification('Таймкод скопирован в буфер обмена');
                 }
             });
         });
 
-        // Функция форматирования времени
         function formatTime(seconds) {
             const hours = Math.floor(seconds / 3600);
             const minutes = Math.floor((seconds % 3600) / 60);
@@ -170,7 +193,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Функция показа уведомлений
         function showNotification(message) {
             const notification = document.createElement('div');
             notification.className = 'alert alert-success position-fixed';
@@ -179,17 +201,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             document.body.appendChild(notification);
             
-            // Показываем уведомление
             setTimeout(() => notification.style.opacity = '1', 10);
             
-            // Скрываем через 3 секунды
             setTimeout(() => {
                 notification.style.opacity = '0';
                 setTimeout(() => document.body.removeChild(notification), 300);
             }, 3000);
         }
 
-        // Добавляем индикаторы загрузки
         player.on('waiting', function() {
             console.log('Видео загружается...');
         });
@@ -204,79 +223,5 @@ document.addEventListener('DOMContentLoaded', function() {
 
         console.log('Система таймкодов полностью инициализирована');
 
-    }, 500); // Задержка для корректной инициализации Video.js
-});
-
-// Дополнительные функции для расширенной функциональности
-
-// Функция для создания прогресс-бара с маркерами таймкодов
-function createTimecodeProgressBar() {
-    const timecodeItems = document.querySelectorAll('.timecode-item');
-    const videoElement = document.getElementById('video-player');
-    
-    if (!videoElement || timecodeItems.length === 0) return;
-
-    const player = videojs('video-player');
-    if (!player) return;
-
-    // Создаем контейнер для прогресс-бара
-    const progressContainer = document.createElement('div');
-    progressContainer.className = 'timecodes-progress-container mb-3';
-    progressContainer.innerHTML = `
-        <div class="progress-track">
-            <div class="progress-fill" style="width: 0%"></div>
-        </div>
-    `;
-
-    // Добавляем маркеры таймкодов
-    player.ready(() => {
-        const duration = player.duration();
-        if (duration && duration > 0) {
-            timecodeItems.forEach(item => {
-                const timeSeconds = parseInt(item.dataset.time);
-                const percentage = (timeSeconds / duration) * 100;
-                
-                const marker = document.createElement('div');
-                marker.className = 'progress-marker';
-                marker.style.left = percentage + '%';
-                marker.dataset.time = timeSeconds;
-                
-                if (item.classList.contains('chapter-item')) {
-                    marker.classList.add('chapter-marker');
-                }
-                
-                marker.addEventListener('click', () => {
-                    player.currentTime(timeSeconds);
-                    item.click();
-                });
-                
-                progressContainer.querySelector('.progress-track').appendChild(marker);
-            });
-        }
-    });
-
-    // Обновляем прогресс-бар
-    player.on('timeupdate', () => {
-        const currentTime = player.currentTime();
-        const duration = player.duration();
-        
-        if (duration > 0) {
-            const percentage = (currentTime / duration) * 100;
-            const progressFill = progressContainer.querySelector('.progress-fill');
-            if (progressFill) {
-                progressFill.style.width = percentage + '%';
-            }
-        }
-    });
-
-    // Вставляем прогресс-бар перед списком таймкодов
-    const timecodesList = document.querySelector('.list-group');
-    if (timecodesList && timecodesList.parentNode) {
-        timecodesList.parentNode.insertBefore(progressContainer, timecodesList);
-    }
-}
-
-// Инициализируем прогресс-бар после загрузки страницы
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(createTimecodeProgressBar, 1000);
+    }, 500);
 });
