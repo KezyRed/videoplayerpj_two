@@ -46,3 +46,4 @@ if (typeof videojs !== 'undefined') {
 } else {
     console.error('Video.js не загружен! Проверьте наличие файлов в static/video-js/');
 }
+
