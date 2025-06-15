@@ -56,6 +56,53 @@
                 </div>
             </div>
 
+             <!-- Тайм-коды -->
+            {% if video.timecodes.all %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-clock me-2"></i>
+                        Содержание урока
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for timecode in video.timecodes.all %}
+                        <div class="list-group-item list-group-item-action timecode-item" 
+                             data-time="{{ timecode.time_seconds }}"
+                             style="cursor: pointer;">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center mb-1">
+                                        {% if timecode.is_chapter %}
+                                            <i class="bi bi-play-circle-fill text-danger me-2"></i>
+                                            <strong class="timecode-time text-danger">{{ timecode.get_time_display }}</strong>
+                                        {% else %}
+                                            <i class="bi bi-clock me-2"></i>
+                                            <span class="timecode-time text-primary">{{ timecode.get_time_display }}</span>
+                                        {% endif %}
+                                        <span class="ms-2 {% if timecode.is_chapter %}fw-bold{% endif %}">
+                                            {{ timecode.title }}
+                                        </span>
+                                    </div>
+                                    {% if timecode.description %}
+                                        <small class="text-muted d-block">{{ timecode.description }}</small>
+                                    {% endif %}
+                                </div>
+                                {% if timecode.thumbnail %}
+                                    <img src="{{ timecode.thumbnail.url }}" 
+                                         alt="{{ timecode.title }}"
+                                         class="ms-3 rounded"
+                                         style="width: 60px; height: 40px; object-fit: cover;">
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Материалы к уроку -->
             <div class="card mb-4">
                 <div class="card-body">
@@ -108,3 +155,4 @@
     </div>
 </div>
 {% endblock %}
+

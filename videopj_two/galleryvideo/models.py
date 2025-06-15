@@ -46,6 +46,7 @@ class Video(models.Model):
     
     def get_timecodes_json(self):
         '''возвращает тайм-код в формате JSON для video.js'''
+        import json
         timecodes = []
         for tc in self.timecodes.all().order_by('time_seconds'):
             timecodes.append({
@@ -53,7 +54,7 @@ class Video(models.Model):
                 'text':tc.title,
                 'description':tc.description,
             })
-        return timecodes
+        return json.dumps(timecodes)
     
     def get_chapters(self):
         '''Возвращает только таймкоды, помеченные как главы'''
