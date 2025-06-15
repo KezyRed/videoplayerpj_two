@@ -4,6 +4,7 @@
 
 {% block extra_css %}
 <link href="{% static 'css/video_detail.css' %}" rel="stylesheet">
+<link href="{% static 'css/timecodes.css' %}" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -28,7 +29,7 @@
                     width="100%"
                     height="450"
                     poster="{{ video.thumbnail.url }}"
-                    data-setup="{}">
+                    data-setup='{}'>
                     <source src="{{ video.video_file.url }}" type="video/mp4">
                     <p class="vjs-no-js">
                         Для просмотра этого видео включите JavaScript и рассмотрите возможность обновления до
@@ -56,20 +57,29 @@
                 </div>
             </div>
 
-             <!-- Тайм-коды -->
+                         <!-- Тайм-коды -->
             {% if video.timecodes.all %}
             <div class="card mb-4">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">
                         <i class="bi bi-clock me-2"></i>
                         Содержание урока
                     </h5>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="showAllTimecodes">
+                            Все
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="showChaptersOnly">
+                            Только главы
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
+                    <div class="list-group list-group-flush timecodes-list" id="timecodesList">
                         {% for timecode in video.timecodes.all %}
-                        <div class="list-group-item list-group-item-action timecode-item" 
+                        <div class="list-group-item timecode-item {% if timecode.is_chapter %}chapter-item{% endif %}" 
                              data-time="{{ timecode.time_seconds }}"
+                             data-chapter="{{ timecode.is_chapter|yesno:'true,false' }}"
                              style="cursor: pointer;">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div class="flex-grow-1">
@@ -79,7 +89,7 @@
                                             <strong class="timecode-time text-danger">{{ timecode.get_time_display }}</strong>
                                         {% else %}
                                             <i class="bi bi-clock me-2"></i>
-                                            <span class="timecode-time text-primary">{{ timecode.get_time_display }}</span>
+                                            <span class="timecode-time text-muted">{{ timecode.get_time_display }}</span>
                                         {% endif %}
                                         <span class="ms-2 {% if timecode.is_chapter %}fw-bold{% endif %}">
                                             {{ timecode.title }}
@@ -156,3 +166,90 @@
 </div>
 {% endblock %}
 
+{% block extra_js %}
+<!-- Подключаем JavaScript для таймкодов -->
+<script src="{% static 'js/timecodes.js' %}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Кнопки фильтрации таймкодов
+    const showAllBtn = document.getElementById('showAllTimecodes');
+    const showChaptersBtn = document.getElementById('showChaptersOnly');
+    const timecodesList = document.getElementById('timecodesList');
+
+    if (showAllBtn && showChaptersBtn && timecodesList) {
+        // Показать все таймкоды
+        showAllBtn.addEventListener('click', function() {
+            // Анимация скрытия нечаптерных элементов
+            const nonChapterItems = timecodesList.querySelectorAll('.timecode-item:not(.chapter-item)');
+            
+            // Сначала показываем все элементы с анимацией
+            nonChapterItems.forEach((item, index) => {
+                setTimeout(() => {
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateX(-20px)';
+                    
+                    setTimeout(() => {
+                        item.style.display = 'block';
+                        item.style.opacity = '1';
+                        item.style.transform = 'translateX(0)';
+                        item.style.transition = 'all 0.3s ease';
+                    }, 50);
+                }, index * 50);
+            });
+            
+            timecodesList.classList.remove('chapters-only');
+            
+            // Анимация кнопок
+            showAllBtn.classList.add('active');
+            showChaptersBtn.classList.remove('active');
+            
+            // Добавляем эффект нажатия
+            showAllBtn.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                showAllBtn.style.transform = 'scale(1)';
+            }, 150);
+        });
+
+        // Показать только главы
+        showChaptersBtn.addEventListener('click', function() {
+            // Анимация скрытия нечаптерных элементов
+            const nonChapterItems = timecodesList.querySelectorAll('.timecode-item:not(.chapter-item)');
+            
+            nonChapterItems.forEach((item, index) => {
+                setTimeout(() => {
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateX(-20px)';
+                    item.style.transition = 'all 0.3s ease';
+                    
+                    setTimeout(() => {
+                        item.style.display = 'none';
+                    }, 300);
+                }, index * 30);
+            });
+            
+            setTimeout(() => {
+                timecodesList.classList.add('chapters-only');
+            }, 200);
+            
+            // Анимация кнопок
+            showChaptersBtn.classList.add('active');
+            showAllBtn.classList.remove('active');
+            
+            // Добавляем эффект нажатия
+            showChaptersBtn.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                showChaptersBtn.style.transform = 'scale(1)';
+            }, 150);
+        });
+
+        // Устанавливаем активную кнопку по умолчанию
+        showAllBtn.classList.add('active');
+        
+        // Добавляем transition для плавной анимации кнопок
+        showAllBtn.style.transition = 'all 0.3s ease';
+        showChaptersBtn.style.transition = 'all 0.3s ease';
+    }
+});
+</script>
+{% endblock %}
