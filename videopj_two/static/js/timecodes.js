@@ -1,227 +1,124 @@
-// static/js/timecodes.js - Исправленная версия
-
+// Исправленная версия для Linux
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Инициализация таймкодов...');
+    
     const videoElement = document.getElementById('video-player');
-    if (!videoElement) return;
+    if (!videoElement) {
+        console.error('Видео элемент не найден!');
+        return;
+    }
 
+    // Увеличенная задержка для Linux
     setTimeout(() => {
-        const player = videojs('video-player');
+        console.log('Попытка инициализации Video.js...');
+        
+        // Проверяем доступность Video.js
+        if (typeof videojs === 'undefined') {
+            console.error('Video.js не загружен!');
+            return;
+        }
+
+        const player = videojs('video-player', {
+            fluid: true,
+            responsive: true,
+            controls: true,
+            preload: 'metadata'
+        });
         
         if (!player) {
-            console.error('Video.js плеер не найден');
+            console.error('Video.js плеер не инициализирован');
             return;
         }
 
         const timecodeItems = document.querySelectorAll('.timecode-item');
-        console.log('Найдено таймкодов:', timecodeItems.length);
+        console.log(`Найдено таймкодов: ${timecodeItems.length}`);
 
-        // Флаг для предотвращения автоскролла во время ручного клика
+        if (timecodeItems.length === 0) {
+            console.warn('Таймкоды не найдены на странице');
+            return;
+        }
+
         let isManualClick = false;
 
-        // Добавляем обработчики кликов для таймкодов
-        timecodeItems.forEach(item => {
-            item.addEventListener('click', function() {
+        // Обработчики кликов для таймкодов
+        timecodeItems.forEach((item, index) => {
+            console.log(`Настройка таймкода ${index + 1}:`, item.dataset.time);
+            
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
                 const timeSeconds = parseInt(this.dataset.time);
                 
-                if (!isNaN(timeSeconds)) {
-                    console.log('Переход к времени:', timeSeconds, 'секунд');
-                    
-                    // Устанавливаем флаг ручного клика
-                    isManualClick = true;
-                    
-                    // Убираем активный класс у всех элементов
-                    timecodeItems.forEach(el => el.classList.remove('active', 'current'));
-                    
-                    // Добавляем активный класс к текущему элементу
-                    this.classList.add('active', 'current');
-                    
-                    // Переходим к указанному времени
-                    player.currentTime(timeSeconds);
-                    
-                    // Сбрасываем флаг через небольшую задержку
-                    setTimeout(() => {
-                        isManualClick = false;
-                    }, 1000);
-                    
-                    // Если видео на паузе, запускаем воспроизведение
-                    if (player.paused()) {
-                        player.play();
-                    }
+                if (isNaN(timeSeconds)) {
+                    console.error('Неверный формат времени:', this.dataset.time);
+                    return;
                 }
+
+                console.log(`Переход к времени: ${timeSeconds} секунд`);
+                
+                isManualClick = true;
+                
+                // Убираем активные классы
+                timecodeItems.forEach(el => {
+                    el.classList.remove('active', 'current');
+                });
+                
+                // Добавляем активные классы
+                this.classList.add('active', 'current');
+                
+                // Переходим к времени
+                try {
+                    player.currentTime(timeSeconds);
+                    if (player.paused()) {
+                        player.play().catch(err => {
+                            console.warn('Автозапуск заблокирован браузером:', err);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Ошибка при установке времени:', error);
+                }
+                
+                // Сбрасываем флаг
+                setTimeout(() => {
+                    isManualClick = false;
+                }, 1000);
             });
         });
 
-        // Обновление активного таймкода при воспроизведении
+        // Обновление активного таймкода
         player.on('timeupdate', function() {
-            // Не обновляем активный таймкод во время ручного клика
-            if (!isManualClick) {
-                const currentTime = player.currentTime();
-                updateActiveTimecode(currentTime);
-            }
+            if (isManualClick) return;
+            
+            const currentTime = player.currentTime();
+            updateActiveTimecode(currentTime);
         });
 
-        // Функция обновления активного таймкода
         function updateActiveTimecode(currentTime) {
             let activeTimecode = null;
             
             timecodeItems.forEach(item => {
                 const timeSeconds = parseInt(item.dataset.time);
                 
-                // Убираем текущий класс только если это не ручной клик
                 if (!isManualClick) {
                     item.classList.remove('current');
                 }
                 
-                // Если текущее время больше времени таймкода, он может быть активным
                 if (currentTime >= timeSeconds) {
                     activeTimecode = item;
                 }
             });
             
-            // Устанавливаем текущий таймкод только если это не ручной клик
             if (activeTimecode && !isManualClick) {
                 timecodeItems.forEach(item => item.classList.remove('current'));
                 activeTimecode.classList.add('current');
-                
-                // Прокручиваем к активному таймкоду только при автоматическом обновлении
-                scrollToActiveTimecode(activeTimecode);
             }
         }
 
-        // ИСПРАВЛЕННАЯ функция прокрутки к активному таймкоду
-        function scrollToActiveTimecode(activeItem) {
-            if (!activeItem || isManualClick) return;
-            
-            const container = activeItem.closest('.list-group');
-            if (!container) return;
-            
-            // Проверяем, есть ли вертикальная прокрутка у контейнера
-            if (container.scrollHeight <= container.clientHeight) return;
-            
-            const containerRect = container.getBoundingClientRect();
-            const itemRect = activeItem.getBoundingClientRect();
-            
-            // Более точная проверка видимости элемента
-            const isVisible = (
-                itemRect.top >= containerRect.top + 10 && 
-                itemRect.bottom <= containerRect.bottom - 10
-            );
-            
-            // Прокручиваем только если элемент действительно не виден
-            if (!isVisible) {
-                // Используем более мягкую прокрутку
-                const scrollTop = container.scrollTop;
-                const itemOffsetTop = activeItem.offsetTop;
-                const containerHeight = container.clientHeight;
-                const itemHeight = activeItem.offsetHeight;
-                
-                // Вычисляем оптимальную позицию (центрируем элемент)
-                const targetScrollTop = itemOffsetTop - (containerHeight / 2) + (itemHeight / 2);
-                
-                // Плавная прокрутка
-                container.scrollTo({
-                    top: Math.max(0, targetScrollTop),
-                    behavior: 'smooth'
-                });
-            }
-        }
+        // События плеера для отладки
+        player.on('loadstart', () => console.log('Video: загрузка начата'));
+        player.on('canplay', () => console.log('Video: готов к воспроизведению'));
+        player.on('error', (e) => console.error('Video: ошибка', e));
+        
+        console.log('Система таймкодов инициализирована успешно');
 
-        // Клавиатурные сокращения (без изменений)
-        document.addEventListener('keydown', function(e) {
-            if (document.activeElement.tagName === 'INPUT' || 
-                document.activeElement.tagName === 'TEXTAREA') {
-                return;
-            }
-
-            const currentActive = document.querySelector('.timecode-item.current');
-            let targetTimecode = null;
-
-            switch(e.key) {
-                case 'ArrowUp':
-                    e.preventDefault();
-                    if (currentActive && currentActive.previousElementSibling) {
-                        targetTimecode = currentActive.previousElementSibling;
-                    }
-                    break;
-                    
-                case 'ArrowDown':
-                    e.preventDefault();
-                    if (currentActive && currentActive.nextElementSibling) {
-                        targetTimecode = currentActive.nextElementSibling;
-                    } else if (!currentActive && timecodeItems.length > 0) {
-                        targetTimecode = timecodeItems[0];
-                    }
-                    break;
-                    
-                case 'Enter':
-                case ' ':
-                    e.preventDefault();
-                    if (currentActive) {
-                        currentActive.click();
-                    }
-                    break;
-            }
-
-            if (targetTimecode) {
-                targetTimecode.click();
-            }
-        });
-
-        // Остальной код без изменений...
-        timecodeItems.forEach(item => {
-            item.addEventListener('contextmenu', function(e) {
-                e.preventDefault();
-                const timeSeconds = parseInt(this.dataset.time);
-                
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    const text = `${this.querySelector('.timecode-time').textContent} - ${this.textContent.trim()}`;
-                    navigator.clipboard.writeText(text);
-                    showNotification('Таймкод скопирован в буфер обмена');
-                }
-            });
-        });
-
-        function formatTime(seconds) {
-            const hours = Math.floor(seconds / 3600);
-            const minutes = Math.floor((seconds % 3600) / 60);
-            const secs = Math.floor(seconds % 60);
-            
-            if (hours > 0) {
-                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            } else {
-                return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            }
-        }
-
-        function showNotification(message) {
-            const notification = document.createElement('div');
-            notification.className = 'alert alert-success position-fixed';
-            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; opacity: 0; transition: opacity 0.3s;';
-            notification.textContent = message;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => notification.style.opacity = '1', 10);
-            
-            setTimeout(() => {
-                notification.style.opacity = '0';
-                setTimeout(() => document.body.removeChild(notification), 300);
-            }, 3000);
-        }
-
-        player.on('waiting', function() {
-            console.log('Видео загружается...');
-        });
-
-        player.on('canplay', function() {
-            console.log('Видео готово к воспроизведению');
-        });
-
-        player.on('error', function(e) {
-            console.error('Ошибка воспроизведения видео:', e);
-        });
-
-        console.log('Система таймкодов полностью инициализирована');
-
-    }, 500);
+    }, 1000); // Увеличенная задержка для Linux
 });
