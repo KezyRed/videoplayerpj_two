@@ -105,7 +105,7 @@ class VideoTimecode(models.Model):
                                 verbose_name='Миниатюра для тайм-кода')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
 
-    def str(self):
+    def __str__(self):
         return f"{self.video.title_video_faculty} - {self.get_time_display()} - {self.title}"
     
     def get_time_display(self):
